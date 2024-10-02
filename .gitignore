@@ -1,2 +1,4 @@
 flux_env
+images/*
+__pycache__
 .DS_Store

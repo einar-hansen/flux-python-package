@@ -1,0 +1,41 @@
+from abc import ABC, abstractmethod
+import os
+import torch
+from diffusers import FluxPipeline, FluxImg2ImgPipeline
+from flux_utils import display_image_in_terminal, open_image, generate_sha256
+
+class BasePipeline(ABC):
+    def __init__(self, model_id, revision):
+        self.model_id = model_id
+        self.revision = revision
+        self.pipe = None
+
+    def load_model(self, pipeline_class):
+        self.pipe = pipeline_class.from_pretrained(
+            self.model_id,
+            revision=self.revision,
+            torch_dtype=torch.bfloat16,
+        ).to("mps")
+
+    @abstractmethod
+    def generate_images(self, args):
+        pass
+
+    def save_and_display_image(self, image, args, index):
+        if hasattr(args, 'base_filename') and args.base_filename:
+            filename = f"{args.base_filename}_{index+1}.png"
+        else:
+            sha256_hash = generate_sha256(image)
+            filename = f"{sha256_hash}.png"
+
+        full_path = os.path.join(args.output_dir, filename)
+        image.save(full_path)
+        print(f"Saved image: {full_path}")
+
+        print("\nImage preview:")
+        display_image_in_terminal(image)
+
+        if args.view_image:
+            open_image(full_path)
+
+        return full_path
