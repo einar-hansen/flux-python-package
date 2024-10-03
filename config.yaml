@@ -30,4 +30,38 @@ dev:
   width: 1024
   num_inference_steps: 50
   lora_scale: 0.5
-  strength: 0.95  # for img2img
+  strength: 0.95
+  upscaler_model_id: "jasperai/Flux.1-dev-Controlnet-Upscaler"
+
+# Prompt variant options
+prompt_variants:
+  styles:
+    - "impressionism"
+    - "surrealism"
+    - "pop art"
+    - "minimalism"
+    - "abstract"
+  color_palettes:
+    - "vibrant"
+    - "pastel"
+    - "monochromatic"
+    - "earthy"
+    - "neon"
+  times_of_day:
+    - "sunrise"
+    - "midday"
+    - "sunset"
+    - "nighttime"
+    - "golden hour"
+  settings:
+    - "urban"
+    - "rural"
+    - "futuristic"
+    - "historical"
+    - "fantasy"
+  moods:
+    - "cheerful"
+    - "melancholic"
+    - "mysterious"
+    - "serene"
+    - "chaotic"

@@ -1,54 +1,69 @@
 import time
 import os
-import torch
 from .base_pipeline import BasePipeline
-from diffusers import FluxPipeline
+from prompt_utils import generate_prompt_variant
 
 class SchnellText2ImgPipeline(BasePipeline):
     def __init__(self, model_id, revision):
-        super().__init__(model_id, revision)
+        super().__init__(model_id, revision, "text2img")
 
-    def load_model(self):
-        self.pipe = FluxPipeline.from_pretrained(
-            self.model_id,
-            revision=self.revision,
-            torch_dtype=torch.bfloat16,
-        ).to("mps")
+    def generate_images(self, args, config):
+        """
+        Generates images using the Schnell text2img pipeline.
 
-    def generate_images(self, args):
-        self.load_model()
+        Args:
+            args: Command-line arguments containing prompt, num_images, etc.
+            config: Configuration dictionary containing prompt variants.
 
-        if args.lora_model:
-            self.pipe.load_lora_weights(args.lora_model)
-            self.pipe.fuse_lora(lora_scale=args.lora_scale)
-
+        Returns:
+            List of file paths to the generated images.
+        """
         created_files = []
-
         os.makedirs(args.output_dir, exist_ok=True)
 
-        for i in range(args.num_images):
-            print(f"\nGenerating image {i+1}/{args.num_images}...")
+        batch_size = args.batch_size if hasattr(args, 'batch_size') else 1
+        num_batches = (args.num_images + batch_size - 1) // batch_size
+
+        for batch_num in range(num_batches):
+            print(f"\nGenerating batch {batch_num + 1}/{num_batches}...")
+            batch_start = batch_num * batch_size
+            batch_end = min(batch_start + batch_size, args.num_images)
+            actual_batch_size = batch_end - batch_start
 
             start_time = time.time()
 
-            image = self.pipe(
-                prompt=args.prompt,
+            prompts = []
+            for _ in range(actual_batch_size):
+                if args.randomness:
+                    unique_prompt = generate_prompt_variant(
+                        args.prompt, config['prompt_variants']
+                    )
+                    prompts.append(unique_prompt)
+                else:
+                    prompts.append(args.prompt)
+
+            # Generate images using the pipeline
+            images = self.pipe(
+                prompt=prompts,
                 guidance_scale=args.guidance_scale,
                 height=args.height,
                 width=args.width,
                 num_inference_steps=args.num_inference_steps,
-            ).images[0]
+            ).images
 
             end_time = time.time()
-            generation_time = end_time - start_time
+            execution_time = end_time - start_time
 
-            full_path = self.save_and_display_image(image, args, i)
-            created_files.append(full_path)
+            # Save and display each image in the batch
+            for i, image in enumerate(images):
+                index = batch_start + i
+                prompt_used = prompts[i]
+                full_path = self.save_and_display_image(
+                    image, args, index, execution_time, prompt_used
+                )
+                created_files.append(full_path)
 
-            print(f"Generation time: {generation_time:.2f} seconds")
-
-            if i < args.num_images - 1 and not args.force:
-                input("\nPress Enter to generate the next image...")
+            print(f"Batch generation time: {execution_time:.2f} seconds")
 
         print(f"\n{args.num_images} images have been generated and saved.")
         return created_files
