@@ -6,14 +6,10 @@ from diffusers import FluxPipeline
 
 class DevText2ImgPipeline(BasePipeline):
     def __init__(self, model_id, revision):
-        super().__init__(model_id, revision)
+        super().__init__(model_id, revision, "text2img")
 
     def load_model(self):
-        self.pipe = FluxPipeline.from_pretrained(
-            self.model_id,
-            revision=self.revision,
-            torch_dtype=torch.bfloat16,
-        ).to("mps")
+        super().load_model(FluxPipeline)
 
     def generate_images(self, args):
         self.load_model()
@@ -40,12 +36,12 @@ class DevText2ImgPipeline(BasePipeline):
             ).images[0]
 
             end_time = time.time()
-            generation_time = end_time - start_time
+            execution_time = end_time - start_time
 
-            full_path = self.save_and_display_image(image, args, i)
+            full_path = self.save_and_display_image(image, args, i, execution_time)
             created_files.append(full_path)
 
-            print(f"Generation time: {generation_time:.2f} seconds")
+            print(f"Generation time: {execution_time:.2f} seconds")
 
             if i < args.num_images - 1 and not args.force:
                 input("\nPress Enter to generate the next image...")

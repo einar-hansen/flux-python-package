@@ -104,6 +104,20 @@ Default settings can be adjusted in the `config.yaml` file. There are separate c
 
 Note: There's often a trade-off between generation speed and image quality.
 
+## Random Prompt Variants
+
+You can generate unique random prompt variants for each image using the `-r` or `--randomness` flag. This feature creates a slightly modified version of your base prompt for each image, adding variety to your generations.
+
+Usage:
+```python
+python run_flux.py --mode text2img --model schnell "Your base prompt" -n <number_of_images> -r
+```
+
+When this mode is enabled, the script will print the final prompt used for each image generation.
+
+You can customize the available options for prompt variants by editing the `prompt_variants` section in the `config.yaml` file. This allows you to add, remove, or modify the styles, color palettes, times of day, settings, and moods used in generating variants.
+
+## Logging
 ## Tokenizer Parallelism
 
 The script sets `TOKENIZERS_PARALLELISM` to `false` to avoid potential deadlocks. If you encounter issues related to tokenizer parallelism, you can manually set this environment variable:
