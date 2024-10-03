@@ -21,7 +21,7 @@ class BasePipeline(ABC):
         self.pipe = pipeline_class.from_pretrained(
             self.model_id,
             revision=self.revision,
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float32,
         ).to("mps")
         print("Model loaded successfully.")
 
