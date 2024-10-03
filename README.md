@@ -54,7 +54,7 @@ Generate a single image from a text prompt:
 python run_flux.py --model schnell --mode text2img "A cyberpunk cityscape"
 ```
 
-![A cyberpunk cityscape](images/598dbe74ae3a155205f6ded64f6ea4e782272bd4c5debc5c40c570154fc8c80f.png)
+![A cyberpunk cityscape](images/cyberpunk-landscape.webp)
 
 ### 2. Multiple Images with Random Variants
 
@@ -66,41 +66,34 @@ python run_flux.py --model schnell --mode text2img "a developer that sits in the
 
 This appends f.example ", during golden hour time of day", ", in the style of surrealism" or ", in a fantasy setting". You can control what kind of styles you randomly want to apply in the `config.yaml` file.
 
-![Image1](images/7a87dd4428ddb913b1e0ab76f0fedaa3196743cd162c29a80d7ef73c4f8d90a4.png)
-![Image1](images/15b406f271f00c7688d037ec7431a82af403b8df57feefd2411143bb186bf2b3.png)
-![Image1](images/55fe77a4e163b05d26ea72484105c23ab38283cfc305bd9cafbc0dc423288e39.png)
+![A developer at work](images/developer-1.webp)
+![A developer at work](images/developer-2.webp)
+![A developer at work](images/developer-3.webp)
 
 ### 3. Image-to-Image Generation
 
 Transform an existing image based on a prompt:
 
 ```bash
-python run_flux.py --model dev --mode img2img --strength 0.85 -i images/cityscape.png "Turn the landscape into a winter wonderland"
+python run_flux.py --model dev --mode img2img --strength 0.80 -i images/cityscape.png "Turn the landscape into a winter wonderland"
+python run_flux.py --model dev --mode img2img --strength 0.70 -s 50 -i images/cityscape.png "turn the landscape into a snowy, white winter wonderland"
 ```
 
-![A wonderland cyberpunk cityscape](images/598dbe74ae3a155205f6ded64f6ea4e782272bd4c5debc5c40c570154fc8c80f.png)
+![A wonderland cyberpunk cityscape 1](images/winter-wonderland-1.webp)
+![A wonderland cyberpunk cityscape 2](images/winter-wonderland-2.webp)
+![A wonderland cyberpunk cityscape 3](images/winter-wonderland-3.webp)
 
 Click on the links to learn more about how to use the [strength](https://huggingface.co/docs/diffusers/using-diffusers/img2img#strength) and [guidance_scale](https://huggingface.co/docs/diffusers/using-diffusers/img2img#guidance-scale) arguments.
 
-### 4. Customizing Image Size
+### 4. Upscaling an Image
 
-Generate a larger image with custom dimensions:
-
-```bash
-python run_flux.py --model schnell --mode text2img "An intricate mandala design" -H 1024 -W 1024
-```
-
-[Insert Image Here: mandala_large.png]
-
-### 5. Adjusting Generation Parameters
-
-Fine-tune the image generation process:
+Generate a larger/upscaled image. This only works on the dev model.
 
 ```bash
-python run_flux.py --model dev --mode text2img "A futuristic space station" -g 7.5 -s 50
+python run_flux.py --model dev --mode upscale "improve image the quality" --input_image images/portrait-rounded-xs.png
 ```
-
-[Insert Image Here: space_station.png]
+![Original image](images/upscaled-portrait.webp)
+![Upscaled image](images/orignial-portrait.webp)
 
 ## Configuration
 
