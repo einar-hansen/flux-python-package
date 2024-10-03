@@ -5,15 +5,18 @@ This project provides a flexible framework for generating images using the Flux 
 ## Setup
 
 1. Clone this repository
-2. Create and activate a virtual environment:
+   ```bash
+   git clone https://github.com/einar-hansen/flux-python-package.git
    ```
+2. Create and activate a virtual environment:
+   ```bash
    python3 -m venv flux_env
    source flux_env/bin/activate
    ```
 3. Install the required dependencies:
-   ```
+   ```bash
    pip install git+https://github.com/huggingface/diffusers.git
-   pip install transformers torch pillow pyyaml term-image
+   pip install transformers torch pillow pyyaml term-image accelerate protobuf sentencepiece
    ```
 
 ## Usage
@@ -26,7 +29,7 @@ python run_flux.py [options] <prompt>
 
 ### Options
 
-- `--mode {text2img,img2img}`: Mode of operation (default: text2img)
+- `--mode {text2img,img2img,upscale}`: Mode of operation (default: text2img)
 - `--model {schnell,dev}`: Model to use (default: schnell)
 - `-n, --num_images`: Number of images to generate (default in config.yaml)
 - `-o, --output_dir`: Output directory for generated images (default in config.yaml)
@@ -49,10 +52,9 @@ python run_flux.py [options] <prompt>
 
 Generate a single image from a text prompt:
 
-```bash
-
-python run_flux.py --model schnell --mode text2img "A cyberpunk cityscape"
-```
+   ```bash
+   python run_flux.py --model schnell --mode text2img "A cyberpunk cityscape"
+   ```
 
 ![A cyberpunk cityscape](images/cyberpunk-landscape.webp)
 
@@ -60,9 +62,9 @@ python run_flux.py --model schnell --mode text2img "A cyberpunk cityscape"
 
 Generate multiple images with random prompt variants:
 
-```bash
-python run_flux.py --model schnell --mode text2img "a developer that sits in the office working on a apple mac, very concentrated, can partially see the code on the screen, the office is professional and has a few green plants, scandinavian style." -n 3 -r
-```
+   ```bash
+   python run_flux.py --model schnell --mode text2img --num_images 3 --randomness "a developer that sits in the office working on a apple mac, very concentrated, can partially see the code on the screen, the office is professional and has a few green plants, scandinavian style."
+   ```
 
 This appends f.example ", during golden hour time of day", ", in the style of surrealism" or ", in a fantasy setting". You can control what kind of styles you randomly want to apply in the `config.yaml` file.
 
@@ -74,10 +76,9 @@ This appends f.example ", during golden hour time of day", ", in the style of su
 
 Transform an existing image based on a prompt:
 
-```bash
-python run_flux.py --model dev --mode img2img --strength 0.80 -i images/cityscape.png "Turn the landscape into a winter wonderland"
-python run_flux.py --model dev --mode img2img --strength 0.70 -s 50 -i images/cityscape.png "turn the landscape into a snowy, white winter wonderland"
-```
+   ```bash
+   python run_flux.py --model dev --mode img2img --strength 0.70 --num_inference_steps 50 --input_image images/cityscape.png "turn the landscape into a snowy, white winter wonderland"
+   ```
 
 ![A wonderland cyberpunk cityscape 1](images/winter-wonderland-1.webp)
 ![A wonderland cyberpunk cityscape 2](images/winter-wonderland-2.webp)
@@ -89,11 +90,12 @@ Click on the links to learn more about how to use the [strength](https://hugging
 
 Generate a larger/upscaled image. This only works on the dev model.
 
-```bash
-python run_flux.py --model dev --mode upscale "improve image the quality" --input_image images/portrait-rounded-xs.png
-```
-![Original image](images/upscaled-portrait.webp)
+   ```bash
+   python run_flux.py --model dev --mode upscale --input_image images/portrait-rounded-xs.png "improve image the quality"
+   ```
+
 ![Upscaled image](images/orignial-portrait.webp)
+![Original image](images/upscaled-portrait.webp)
 
 ## Configuration
 
