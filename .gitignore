@@ -3,3 +3,12 @@ generation_log.csv
 images/*
 __pycache__
 .DS_Store
+!images/winter-wonderland-1.webp
+!images/winter-wonderland-2.webp
+!images/winter-wonderland-3.webp
+!images/upscaled-portrait.webp
+!images/orignial-portrait.webp
+!images/cyberpunk-landscape.webp
+!images/developer-1.webp
+!images/developer-2.webp
+!images/developer-3.webp
