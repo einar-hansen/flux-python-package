@@ -21,15 +21,15 @@ class BasePipeline(ABC):
         self.pipe = pipeline_class.from_pretrained(
             self.model_id,
             revision=self.revision,
-            torch_dtype=torch.float32,
-        ).to("mps")
+            torch_dtype=torch.bfloat16,  # Use bfloat16 for MPS
+        ).to("mps")  # Ensure the model is on the MPS device
         print("Model loaded successfully.")
 
     @abstractmethod
-    def generate_images(self, args):
+    def generate_images(self, args, config):
         pass
 
-    def save_and_display_image(self, image, args, index, execution_time):
+    def save_and_display_image(self, image, args, index, execution_time, prompt):
         sha256_hash = generate_sha256(image)
         if hasattr(args, 'base_filename') and args.base_filename:
             filename = f"{args.base_filename}_{index+1}.png"
@@ -37,8 +37,11 @@ class BasePipeline(ABC):
             filename = f"{sha256_hash}.png"
 
         full_path = os.path.join(args.output_dir, filename)
-        image.save(full_path)
-        print(f"Saved image: {full_path}")
+        try:
+            image.save(full_path)
+            print(f"Saved image: {full_path}")
+        except IOError as e:
+            print(f"Error saving image: {e}")
 
         print("\nImage preview:")
         display_image_in_terminal(image)
@@ -47,7 +50,7 @@ class BasePipeline(ABC):
             open_image(full_path)
 
         # Log the generation
-        self.log_generation(sha256_hash, args.prompt, full_path, execution_time, args)
+        self.log_generation(sha256_hash, prompt, full_path, execution_time, args)
 
         return full_path
 
@@ -60,7 +63,9 @@ class BasePipeline(ABC):
             output_file,
             f"{execution_time:.2f}",
             self.model_id,
-            self.model_type
+            self.model_type,
+            args.guidance_scale,
+            args.strength if self.model_type == "img2img" else 'N/A'
         ]
 
         if self.model_type == "img2img":
@@ -71,7 +76,7 @@ class BasePipeline(ABC):
         with open(self.log_file, 'a', newline='') as f:
             writer = csv.writer(f, delimiter=';')
             if not file_exists:
-                header = ['Id', 'Timestamp', 'Prompt', 'OutputFile', 'ExecutionTime', 'ModelName', 'ModelType']
+                header = ['Id', 'Timestamp', 'Prompt', 'OutputFile', 'ExecutionTime', 'ModelName', 'ModelType', 'GuidanceScale', 'Strength']
                 if self.model_type == "img2img":
                     header.append('InputFile')
                 writer.writerow(header)

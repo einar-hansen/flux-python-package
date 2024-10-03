@@ -1,7 +1,3 @@
-# How to
-
-source flux_env/bin/activate
-
 # Flux Image Generation
 
 This project provides a flexible framework for generating images using the Flux model from Black Forest Labs. It supports both text-to-image and image-to-image generation using either the Schnell or Dev model variants.
@@ -19,20 +15,6 @@ This project provides a flexible framework for generating images using the Flux 
    pip install git+https://github.com/huggingface/diffusers.git
    pip install transformers torch pillow pyyaml term-image
    ```
-
-## Using the Virtual Environment
-
-Always activate the virtual environment before running the script or installing new dependencies:
-
-```
-source flux_env/bin/activate
-```
-
-To deactivate the virtual environment when you're done:
-
-```
-deactivate
-```
 
 ## Usage
 
@@ -59,87 +41,80 @@ python run_flux.py [options] <prompt>
 - `--lora_scale`: Scale for the LoRA model (default in config.yaml)
 - `-i, --input_image`: Path to the input image (required for img2img mode)
 - `--strength`: Strength for img2img generation (default in config.yaml)
-
-## Configuration
-
-Default settings can be adjusted in the `config.yaml` file. There are separate configurations for Schnell and Dev models.
+- `-r, --randomness`: Generate random prompt variants for each image
 
 ## Examples
 
-1. Generate a text-to-image using Schnell model:
-   ```
-   python run_flux.py --mode text2img --model schnell "A beautiful landscape with mountains and a lake" -n 3
-   ```
+### 1. Basic Text-to-Image Generation
 
-2. Generate an image-to-image using Dev model:
-   ```
-   python run_flux.py --mode img2img --model dev "A futuristic cityscape" -i input_image.jpg --strength 0.75
-   ```
+Generate a single image from a text prompt:
 
-3. Use a LoRA model:
-   ```
-   python run_flux.py --mode text2img --model schnell "A portrait in the style of Van Gogh" --lora_model path/to/lora_model.safetensors
-   ```
+```bash
 
-## Project Structure
-
-- `run_flux.py`: Main script to run the image generation
-- `config.yaml`: Configuration file with default settings
-- `flux_utils.py`: Utility functions
-- `pipelines/`: Directory containing the pipeline implementations
-  - `base_pipeline.py`: Base class for all pipelines
-  - `schnell_text2img.py`: Schnell text-to-image pipeline
-  - `schnell_img2img.py`: Schnell image-to-image pipeline
-  - `dev_text2img.py`: Dev text-to-image pipeline
-  - `dev_img2img.py`: Dev image-to-image pipeline
-
-## Performance Considerations
-
-- The generation time can vary based on the complexity of the prompt, image size, number of inference steps, and available hardware.
-- To potentially speed up generation:
-  1. Reduce the number of inference steps (`-s` argument)
-  2. Generate smaller images (adjust `-H` and `-W` arguments)
-  3. Ensure you're using a GPU if available
-  4. Close other resource-intensive applications
-
-Note: There's often a trade-off between generation speed and image quality.
-
-## Random Prompt Variants
-
-You can generate unique random prompt variants for each image using the `-r` or `--randomness` flag. This feature creates a slightly modified version of your base prompt for each image, adding variety to your generations.
-
-Usage:
-```python
-python run_flux.py --mode text2img --model schnell "Your base prompt" -n <number_of_images> -r
+python run_flux.py --model schnell --mode text2img "A cyberpunk cityscape"
 ```
 
-When this mode is enabled, the script will print the final prompt used for each image generation.
+![A cyberpunk cityscape](images/598dbe74ae3a155205f6ded64f6ea4e782272bd4c5debc5c40c570154fc8c80f.png)
 
-You can customize the available options for prompt variants by editing the `prompt_variants` section in the `config.yaml` file. This allows you to add, remove, or modify the styles, color palettes, times of day, settings, and moods used in generating variants.
+### 2. Multiple Images with Random Variants
+
+Generate multiple images with random prompt variants:
+
+```bash
+python run_flux.py --model schnell --mode text2img "a developer that sits in the office working on a apple mac, very concentrated, can partially see the code on the screen, the office is professional and has a few green plants, scandinavian style." -n 3 -r
+```
+
+This appends f.example ", during golden hour time of day", ", in the style of surrealism" or ", in a fantasy setting". You can control what kind of styles you randomly want to apply in the `config.yaml` file.
+
+![Image1](images/7a87dd4428ddb913b1e0ab76f0fedaa3196743cd162c29a80d7ef73c4f8d90a4.png)
+![Image1](images/15b406f271f00c7688d037ec7431a82af403b8df57feefd2411143bb186bf2b3.png)
+![Image1](images/55fe77a4e163b05d26ea72484105c23ab38283cfc305bd9cafbc0dc423288e39.png)
+
+### 3. Image-to-Image Generation
+
+Transform an existing image based on a prompt:
+
+```bash
+python run_flux.py --model dev --mode img2img --strength 0.85 -i images/cityscape.png "Turn the landscape into a winter wonderland"
+```
+
+![A wonderland cyberpunk cityscape](images/598dbe74ae3a155205f6ded64f6ea4e782272bd4c5debc5c40c570154fc8c80f.png)
+
+Click on the links to learn more about how to use the [strength](https://huggingface.co/docs/diffusers/using-diffusers/img2img#strength) and [guidance_scale](https://huggingface.co/docs/diffusers/using-diffusers/img2img#guidance-scale) arguments.
+
+### 4. Customizing Image Size
+
+Generate a larger image with custom dimensions:
+
+```bash
+python run_flux.py --model schnell --mode text2img "An intricate mandala design" -H 1024 -W 1024
+```
+
+[Insert Image Here: mandala_large.png]
+
+### 5. Adjusting Generation Parameters
+
+Fine-tune the image generation process:
+
+```bash
+python run_flux.py --model dev --mode text2img "A futuristic space station" -g 7.5 -s 50
+```
+
+[Insert Image Here: space_station.png]
+
+## Configuration
+
+Default settings can be adjusted in the `config.yaml` file. There are separate configurations for Schnell and Dev models, as well as options for prompt variants.
 
 ## Logging
 
-The script generates a log file named `generation_log.csv` in the same directory as the script. This CSV file uses semicolons (;) as delimiters and contains the following information for each generated image:
+The script generates a log file named `generation_log.csv` in the same directory as the script. This CSV file uses semicolons (;) as delimiters and contains information about each generated image.
 
-- Id: SHA256 hash of the generated image
-- Timestamp: Date and time of generation
-- Prompt: The prompt used to generate the image
-- OutputFile: Full path to the saved image file
-- ExecutionTime: Time taken to generate the image (in seconds)
-- ModelName: Name of the model used (e.g., "black-forest-labs/FLUX.1-schnell")
-- ModelType: Type of generation (text2img or img2img)
-- InputFile: Full path to the input image file (only for img2img operations)
+## Performance Considerations
 
-Note: When opening the log file in a spreadsheet application, make sure to specify the semicolon as the delimiter to properly separate the fields.
-
-
-## Tokenizer Parallelism
-
-The script sets `TOKENIZERS_PARALLELISM` to `false` to avoid potential deadlocks. If you encounter issues related to tokenizer parallelism, you can manually set this environment variable:
-
-```
-export TOKENIZERS_PARALLELISM=false
-```
+- The initial model loading may take some time, but subsequent image generations will be faster.
+- Adjust the `num_inference_steps` parameter to balance between generation speed and image quality.
+- Using a GPU can significantly speed up the image generation process.
 
 ## Contributing
 
