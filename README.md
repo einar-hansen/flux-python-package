@@ -118,6 +118,21 @@ When this mode is enabled, the script will print the final prompt used for each 
 You can customize the available options for prompt variants by editing the `prompt_variants` section in the `config.yaml` file. This allows you to add, remove, or modify the styles, color palettes, times of day, settings, and moods used in generating variants.
 
 ## Logging
+
+The script generates a log file named `generation_log.csv` in the same directory as the script. This CSV file uses semicolons (;) as delimiters and contains the following information for each generated image:
+
+- Id: SHA256 hash of the generated image
+- Timestamp: Date and time of generation
+- Prompt: The prompt used to generate the image
+- OutputFile: Full path to the saved image file
+- ExecutionTime: Time taken to generate the image (in seconds)
+- ModelName: Name of the model used (e.g., "black-forest-labs/FLUX.1-schnell")
+- ModelType: Type of generation (text2img or img2img)
+- InputFile: Full path to the input image file (only for img2img operations)
+
+Note: When opening the log file in a spreadsheet application, make sure to specify the semicolon as the delimiter to properly separate the fields.
+
+
 ## Tokenizer Parallelism
 
 The script sets `TOKENIZERS_PARALLELISM` to `false` to avoid potential deadlocks. If you encounter issues related to tokenizer parallelism, you can manually set this environment variable:

@@ -4,6 +4,9 @@ import argparse
 import yaml
 import os
 from pipelines import SchnellText2ImgPipeline, SchnellImg2ImgPipeline, DevText2ImgPipeline, DevImg2ImgPipeline
+from flux_utils import set_tokenizer_parallelism
+from typing import List
+import random
 
 # Set the TOKENIZERS_PARALLELISM environment variable
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -11,6 +14,38 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 def load_config():
     with open('config.yaml', 'r') as f:
         return yaml.safe_load(f)
+
+def generate_prompt_variant(base_prompt: str, config: dict) -> str:
+    """
+    Generate a variant of the base prompt.
+
+    :param base_prompt: The original prompt to create a variant from.
+    :param config: The configuration dictionary containing style options.
+    :return: A prompt variant.
+    """
+    modifiers = [
+        "in the style of {}",
+        "with a {} color palette",
+        "during {} time of day",
+        "in a {} setting",
+        "with a {} mood",
+    ]
+
+    modifier = random.choice(modifiers)
+    if "style" in modifier:
+        fill = random.choice(config['styles'])
+    elif "color palette" in modifier:
+        fill = random.choice(config['color_palettes'])
+    elif "time of day" in modifier:
+        fill = random.choice(config['times_of_day'])
+    elif "setting" in modifier:
+        fill = random.choice(config['settings'])
+    elif "mood" in modifier:
+        fill = random.choice(config['moods'])
+
+    variant = f"{base_prompt}, {modifier.format(fill)}"
+
+    return variant
 
 def main():
     config = load_config()
@@ -37,6 +72,8 @@ def main():
                         help="Path to the LoRA model (default: None)")
     parser.add_argument("-i", "--input_image", type=str,
                         help="Path to the input image (required for img2img mode)")
+    parser.add_argument("-r", "--randomness", action="store_true",
+                        help="Generate random prompt variants for each image")
 
     args, unknown = parser.parse_known_args()
 
@@ -72,7 +109,20 @@ def main():
     }[(args.model, args.mode)]
 
     pipeline = pipeline_class(model_config['model_id'], model_config['revision'])
-    pipeline.generate_images(args)
+
+    for i in range(args.num_images):
+        if args.randomness:
+            variant_prompt = generate_prompt_variant(args.prompt, config['prompt_variants'])
+            print(f"\nGenerating image {i+1}/{args.num_images}")
+            print(f"Final prompt: {variant_prompt}")
+            args.prompt = variant_prompt
+        else:
+            print(f"\nGenerating image {i+1}/{args.num_images}")
+
+        pipeline.generate_images(args)
+
+        if i < args.num_images - 1 and not args.force:
+            input("\nPress Enter to generate the next image...")
 
 if __name__ == "__main__":
     main()
