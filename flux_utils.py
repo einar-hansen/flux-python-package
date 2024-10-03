@@ -8,6 +8,7 @@ import sys
 
 def set_tokenizer_parallelism(enable_parallelism):
     os.environ["TOKENIZERS_PARALLELISM"] = "true" if enable_parallelism else "false"
+    os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 def display_image_in_terminal(image):
     """Display a full image in the terminal."""
