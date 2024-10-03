@@ -30,7 +30,8 @@ dev:
   width: 1024
   num_inference_steps: 50
   lora_scale: 0.5
-  strength: 0.95  # for img2img
+  strength: 0.95
+  upscaler_model_id: "jasperai/Flux.1-dev-Controlnet-Upscaler"
 
 # Prompt variant options
 prompt_variants:

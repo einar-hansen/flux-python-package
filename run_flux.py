@@ -8,6 +8,7 @@ from pipelines import (
     SchnellImg2ImgPipeline,
     DevText2ImgPipeline,
     DevImg2ImgPipeline,
+    DevUpscalePipeline,
 )
 from prompt_utils import generate_prompt_variant
 import copy
@@ -24,7 +25,7 @@ def main():
     initial_parser = argparse.ArgumentParser(description="Run Flux image generation", add_help=False)
     initial_parser.add_argument(
         "--mode",
-        choices=["text2img", "img2img"],
+        choices=["text2img", "img2img", "upscale"],
         default=config['default_mode'],
         help=f"Mode of operation (default: {config['default_mode']})",
     )
@@ -56,7 +57,7 @@ def main():
     # Add initial arguments again to the main parser
     parser.add_argument(
         "--mode",
-        choices=["text2img", "img2img"],
+        choices=["text2img", "img2img", "upscale"],
         default=args.mode,
         help=f"Mode of operation (default: {config['default_mode']})",
     )
@@ -174,9 +175,9 @@ def main():
     # Now parse all arguments
     args = parser.parse_args()
 
-    # Validate input_image for img2img mode
-    if args.mode == "img2img" and not args.input_image:
-        parser.error("The --input_image argument is required when using img2img mode")
+    # Validate input_image for img2img and upscale modes
+    if args.mode in ["img2img", "upscale"] and not args.input_image:
+        parser.error("The --input_image argument is required when using img2img or upscale mode")
 
     # Create the appropriate pipeline
     pipeline_class = {
@@ -184,11 +185,21 @@ def main():
         ("schnell", "img2img"): SchnellImg2ImgPipeline,
         ("dev", "text2img"): DevText2ImgPipeline,
         ("dev", "img2img"): DevImg2ImgPipeline,
-    }[(args.model, args.mode)]
+        ("dev", "upscale"): DevUpscalePipeline,  # Add this line
+    }.get((args.model, args.mode))
+
+    if pipeline_class is None:
+        parser.error(f"The combination of model '{args.model}' and mode '{args.mode}' is not supported.")
+
+    # Update model_id for upscale mode
+    if args.mode == "upscale":
+        model_id = config[args.model]['upscaler_model_id']
+    else:
+        model_id = config[args.model]['model_id']
 
     # Create the pipeline (which loads the model)
     pipeline = pipeline_class(
-        config[args.model]['model_id'], config[args.model]['revision']
+        model_id, config[args.model]['revision']
     )
 
     # Generate images using the pipeline
