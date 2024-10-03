@@ -1,25 +1,13 @@
 import time
 import os
-import torch
 from .base_pipeline import BasePipeline
-from diffusers import FluxPipeline
 
 class SchnellText2ImgPipeline(BasePipeline):
     def __init__(self, model_id, revision):
         super().__init__(model_id, revision, "text2img")
 
-    def load_model(self):
-        super().load_model(FluxPipeline)
-
     def generate_images(self, args):
-        self.load_model()
-
-        if args.lora_model:
-            self.pipe.load_lora_weights(args.lora_model)
-            self.pipe.fuse_lora(lora_scale=args.lora_scale)
-
         created_files = []
-
         os.makedirs(args.output_dir, exist_ok=True)
 
         for i in range(args.num_images):
@@ -42,9 +30,6 @@ class SchnellText2ImgPipeline(BasePipeline):
             created_files.append(full_path)
 
             print(f"Generation time: {execution_time:.2f} seconds")
-
-            if i < args.num_images - 1 and not args.force:
-                input("\nPress Enter to generate the next image...")
 
         print(f"\n{args.num_images} images have been generated and saved.")
         return created_files

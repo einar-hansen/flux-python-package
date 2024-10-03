@@ -13,13 +13,17 @@ class BasePipeline(ABC):
         self.model_type = model_type
         self.pipe = None
         self.log_file = "generation_log.csv"
+        self.load_model()
 
-    def load_model(self, pipeline_class):
+    def load_model(self):
+        print(f"Loading {self.model_type} model...")
+        pipeline_class = FluxPipeline if self.model_type == "text2img" else FluxImg2ImgPipeline
         self.pipe = pipeline_class.from_pretrained(
             self.model_id,
             revision=self.revision,
             torch_dtype=torch.bfloat16,
         ).to("mps")
+        print("Model loaded successfully.")
 
     @abstractmethod
     def generate_images(self, args):
@@ -65,7 +69,7 @@ class BasePipeline(ABC):
         file_exists = os.path.isfile(self.log_file)
 
         with open(self.log_file, 'a', newline='') as f:
-            writer = csv.writer(f, delimiter=';')  # Changed delimiter to semicolon
+            writer = csv.writer(f, delimiter=';')
             if not file_exists:
                 header = ['Id', 'Timestamp', 'Prompt', 'OutputFile', 'ExecutionTime', 'ModelName', 'ModelType']
                 if self.model_type == "img2img":

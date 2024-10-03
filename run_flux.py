@@ -5,8 +5,8 @@ import yaml
 import os
 from pipelines import SchnellText2ImgPipeline, SchnellImg2ImgPipeline, DevText2ImgPipeline, DevImg2ImgPipeline
 from flux_utils import set_tokenizer_parallelism
-from typing import List
 import random
+import copy
 
 # Set the TOKENIZERS_PARALLELISM environment variable
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -16,13 +16,6 @@ def load_config():
         return yaml.safe_load(f)
 
 def generate_prompt_variant(base_prompt: str, config: dict) -> str:
-    """
-    Generate a variant of the base prompt.
-
-    :param base_prompt: The original prompt to create a variant from.
-    :param config: The configuration dictionary containing style options.
-    :return: A prompt variant.
-    """
     modifiers = [
         "in the style of {}",
         "with a {} color palette",
@@ -108,21 +101,25 @@ def main():
         ("dev", "img2img"): DevImg2ImgPipeline
     }[(args.model, args.mode)]
 
-    pipeline = pipeline_class(model_config['model_id'], model_config['revision'])
+    # Create the pipeline (which loads the model)
+    pipeline = pipeline_class(config[args.model]['model_id'], config[args.model]['revision'])
 
     for i in range(args.num_images):
+        current_args = copy.deepcopy(args)
         if args.randomness:
-            variant_prompt = generate_prompt_variant(args.prompt, config['prompt_variants'])
+            current_args.prompt = generate_prompt_variant(args.prompt, config['prompt_variants'])
             print(f"\nGenerating image {i+1}/{args.num_images}")
-            print(f"Final prompt: {variant_prompt}")
-            args.prompt = variant_prompt
+            print(f"Final prompt: {current_args.prompt}")
         else:
             print(f"\nGenerating image {i+1}/{args.num_images}")
 
-        pipeline.generate_images(args)
+        current_args.num_images = 1
+        pipeline.generate_images(current_args)
 
         if i < args.num_images - 1 and not args.force:
             input("\nPress Enter to generate the next image...")
+
+    print(f"\n{args.num_images} images have been generated and saved.")
 
 if __name__ == "__main__":
     main()
