@@ -172,6 +172,15 @@ def main():
         help=f"Strength for img2img generation (default: {model_config['strength']})",
     )
 
+    # Add new argument for output format
+    parser.add_argument(
+        "--output_format",
+        type=str,
+        default=config.get('output_format', 'webp'),
+        choices=['webp', 'png', 'jpg'],
+        help=f"Output format for generated images (default: {config.get('output_format', 'webp')})",
+    )
+
     # Now parse all arguments
     args = parser.parse_args()
 

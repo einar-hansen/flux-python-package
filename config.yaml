@@ -5,6 +5,7 @@ default_model: "schnell"
 output_dir: "images"
 view_image: true
 force: true
+output_format: "webp"  # New line: default output format
 
 # Common settings
 common:

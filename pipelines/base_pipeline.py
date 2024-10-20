@@ -31,14 +31,15 @@ class BasePipeline(ABC):
 
     def save_and_display_image(self, image, args, index, execution_time, prompt):
         sha256_hash = generate_sha256(image)
+        output_format = args.output_format.lower()
         if hasattr(args, 'base_filename') and args.base_filename:
-            filename = f"{args.base_filename}_{index+1}.png"
+            filename = f"{args.base_filename}_{index+1}.{output_format}"
         else:
-            filename = f"{sha256_hash}.png"
+            filename = f"{sha256_hash}.{output_format}"
 
         full_path = os.path.join(args.output_dir, filename)
         try:
-            image.save(full_path)
+            image.save(full_path, format=output_format.upper())
             print(f"Saved image: {full_path}")
         except IOError as e:
             print(f"Error saving image: {e}")

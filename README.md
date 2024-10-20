@@ -24,6 +24,7 @@ This project provides a flexible framework for generating images using the Flux 
 Run the main script `run_flux.py` with the following syntax:
 
 ```
+# source flux_env/bin/activate
 python run_flux.py [options] <prompt>
 ```
 
@@ -45,6 +46,7 @@ python run_flux.py [options] <prompt>
 - `-i, --input_image`: Path to the input image (required for img2img mode)
 - `--strength`: Strength for img2img generation (default in config.yaml)
 - `-r, --randomness`: Generate random prompt variants for each image
+- `--output_format`: The image format `['webp', 'png', 'jpg']` for the output image
 
 ## Examples
 
@@ -53,6 +55,7 @@ python run_flux.py [options] <prompt>
 Generate a single image from a text prompt:
 
    ```bash
+   # source flux_env/bin/activate
    python run_flux.py --model schnell --mode text2img "A cyberpunk cityscape"
    ```
 
@@ -63,6 +66,7 @@ Generate a single image from a text prompt:
 Generate multiple images with random prompt variants:
 
    ```bash
+   # source flux_env/bin/activate
    python run_flux.py --model schnell --mode text2img --num_images 3 --randomness "a developer that sits in the office working on a apple mac, very concentrated, can partially see the code on the screen, the office is professional and has a few green plants, scandinavian style."
    ```
 
@@ -77,6 +81,7 @@ This appends f.example ", during golden hour time of day", ", in the style of su
 Transform an existing image based on a prompt:
 
    ```bash
+   # source flux_env/bin/activate
    python run_flux.py --model dev --mode img2img --strength 0.70 --num_inference_steps 50 --input_image images/cityscape.png "turn the landscape into a snowy, white winter wonderland"
    ```
 
@@ -91,6 +96,7 @@ Click on the links to learn more about how to use the [strength](https://hugging
 Generate a larger/upscaled image. This only works on the dev model.
 
    ```bash
+   # source flux_env/bin/activate
    python run_flux.py --model dev --mode upscale --input_image images/portrait-rounded-xs.png "improve image the quality"
    ```
 

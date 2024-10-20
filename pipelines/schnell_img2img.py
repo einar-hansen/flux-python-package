@@ -55,6 +55,8 @@ class SchnellImg2ImgPipeline(BasePipeline):
                 prompt=prompts,
                 image=init_images,
                 strength=args.strength,
+                height=args.height,
+                width=args.width,
                 guidance_scale=args.guidance_scale,
                 num_inference_steps=args.num_inference_steps,
             ).images
